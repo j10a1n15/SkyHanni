@@ -17,9 +17,9 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.nextAfter
 import at.hannibal2.skyhanni.utils.HypixelCommands
 import at.hannibal2.skyhanni.utils.ItemUtils.getInternalName
 import at.hannibal2.skyhanni.utils.ItemUtils.getLore
-import at.hannibal2.skyhanni.utils.LorenzUtils.round
 import at.hannibal2.skyhanni.utils.NEUInternalName
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
+import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.RegexUtils.groupOrNull
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
@@ -34,7 +34,6 @@ import net.minecraft.item.ItemStack
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import kotlin.math.floor
 import kotlin.math.log10
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
@@ -54,6 +53,7 @@ object FarmingFortuneDisplay {
         "collection",
         "§7You have §6\\+(?<ff>\\d{1,3})☘ .*",
     )
+    @Suppress("MaxLineLength")
     private val tooltipFortunePattern by patternGroup.pattern(
         "tooltip.new",
         "^§7Farming Fortune: §a\\+(?<display>[\\d.]+)(?: §2\\(\\+\\d\\))?(?: §9\\(\\+(?<reforge>\\d+)\\))?(?: §d\\(\\+(?<gemstone>\\d+)\\))?\$",
@@ -167,7 +167,7 @@ object FarmingFortuneDisplay {
         list.add(
             Renderable.string(
                 "§6Farming Fortune§7: §e" + if (!recentlySwitchedTool && farmingFortune != -1.0) {
-                    farmingFortune.round(0).addSeparators()
+                    farmingFortune.roundTo(0).addSeparators()
                 } else "§7" + (displayCrop.getLatestTrueFarmingFortune()?.addSeparators() ?: "?"),
             ),
         )
@@ -222,22 +222,24 @@ object FarmingFortuneDisplay {
         if (!GardenAPI.inGarden()) return
         if (event.isMod(2)) update()
         if (gardenJoinTime.passedSince() > 5.seconds && !foundTabUniversalFortune && !gardenJoinTime.isFarPast()) {
-            if (lastUniversalFortuneMissingError.passedSince() < 1.minutes) return
+            if (lastUniversalFortuneMissingError.passedSince() < 20.seconds) return
             ChatUtils.clickableChat(
                 "§cCan not read Farming Fortune from tab list! Open /widget, enable the Stats Widget and " +
                     "show the Farming Fortune stat, also give the widget enough priority.",
                 onClick = { HypixelCommands.widget() },
                 "§eClick to run /widget!",
+                replaceSameMessage = true,
             )
             lastUniversalFortuneMissingError = SimpleTimeMark.now()
         }
         if (firstBrokenCropTime.passedSince() > 10.seconds && !foundTabCropFortune && !firstBrokenCropTime.isFarPast()) {
-            if (lastCropFortuneMissingError.passedSince() < 1.minutes || !GardenAPI.isCurrentlyFarming()) return
+            if (lastCropFortuneMissingError.passedSince() < 20.seconds || !GardenAPI.isCurrentlyFarming()) return
             ChatUtils.clickableChat(
                 "§cCan not read Crop Fortune from tab list! Open /widget, enable the Stats Widget and " +
                     "show latest Crop Fortune, also give the widget enough priority.",
                 onClick = { HypixelCommands.widget() },
                 "§eClick to run /widget!",
+                replaceSameMessage = true,
             )
             lastCropFortuneMissingError = SimpleTimeMark.now()
         }

@@ -13,6 +13,7 @@ We use [IntelliJ](https://www.jetbrains.com/idea/) as an example.
 
 - Download IntelliJ from the [JetBrains Website](https://www.jetbrains.com/idea/download/).
     - Use the Community Edition. (Scroll down a bit.)
+- When you encounter any bug with IntelliJ, please make sure to use the version `2024.1.6`, not `2024.2.x` or above.
 
 ### Cloning the project
 
@@ -30,14 +31,66 @@ We use [IntelliJ](https://www.jetbrains.com/idea/) as an example.
 
 ### Setting up IntelliJ
 
-SkyHanni's Gradle configuration is very similar to the one used in **NotEnoughUpdates**, just
-follow [their guide](https://github.com/NotEnoughUpdates/NotEnoughUpdates/blob/master/CONTRIBUTING.md).
+
+Once your project is imported into IntelliJ from the previous step, all dependencies like Minecraft, NEU, and so on should be automatically
+downloaded. If not, you might need to link the Gradle project in the Gradle tab (little elephant) on the right.
+
+<details>
+<summary>🖼️Show Gradle tab image</summary>
+
+![Gradle tab with Link Project and Gradle Settings highlighted](docs/gradle-tab.jpg)
+
+</details>
+
+If importing fails, make sure the Gradle JVM (found in the settings wheel in the Gradle tab, or by searching <kbd>Ctrl + Shift + A</kbd>
+for "Gradle JVM") is set to a Java 21 JDK. While this is not the version of Java Minecraft 1.8.9 uses, we need this version for some of our
+build tools.
+
+<details>
+<summary>🖼️Show Gradle JVM image</summary>
+
+![Gradle settings showing Java 21 being selected as JVM](docs/gradle-settings.png)
+
+</details>
+
+After all importing is done (which might take a few minutes the first time you download the project), you should find a new IntelliJ run
+configuration.
+
+<details>
+<summary>🖼️Show run configuration selection image</summary>
+
+![Where to select the run configuration](docs/minecraft-client.webp)
+
+</details>
+
+That task might work out of the box, but very likely it will not. We will need to adjust the used Java version. Since Minecraft 1.8.9 uses
+Java 1.8, we will need to adjust the used JDK for running our Mod, as well as potentially changing the argument passing style.
+
+So select an appropriate Java 1.8 JDK (preferably [DCEVM](#hot-swap), but any Java 1.8 JDK or even JRE will do) and select None as the
+argument passing style.
+
+<details>
+<summary>🖼️Show run configuration image</summary>
+
+![Run configuration settings](docs/run-configuration-settings.avif)
+
+</details>
+
+Now that we are done with that, you should be able to launch your game from your IDE with that run configuration.
+
+SkyHanni's Gradle configuration is very similar to the one used in **NotEnoughUpdates**, so if you want to look at another guide, check
+out [their guide](https://github.com/NotEnoughUpdates/NotEnoughUpdates/blob/master/CONTRIBUTING.md).
 
 ## Creating a Pull Request
 
 If you are not very familiar with git, you might want to try this out: https://learngitbranching.js.org/.
 
-_An explanation how to use intellij and branches will follow here soon._
+Proposed changes are better off being in their own branch as this makes development easier for both you and the maintainers of this repository, you can do this by following the instructions from within the IntelliJ window with the SkyHanni project already open.
+- Click the beta dropdown at the top of IntelliJ
+- Click new branch
+- Give the branch a name relating to the changes you plan to make
+
+_A more in depth explanation how to use intellij and branches will follow here soon._
 
 Please use a prefix for the name of the PR (E.g. Feature, Improvement, Fix, Backend, ...).
 
@@ -51,6 +104,13 @@ format like "- #821" to illustrate the dependency.
 - Follow the [Hypixel Rules](https://hypixel.net/rules).
 - Use the coding conventions for [Kotlin](https://kotlinlang.org/docs/coding-conventions.html)
   and [Java](https://www.oracle.com/java/technologies/javase/codeconventions-contents.html).
+-  **My build is failing due to `detekt`, what do I do?**
+    - `detekt` is our code quality tool. It checks for code smells and style issues.
+    - If you have a build failure stating `Analysis failed with ... weighted issues.`, you can check `versions/[target version]/build/reports/detekt/` for a comprehensive list of issues.
+    - **There are valid reasons to deviate from the norm**
+        - If you have such a case, either use `@Supress("rule_name")`, or re-build the `baseline.xml` file, using `./gradlew detektBaselineMain`.
+      After running detektBaselineMain, you should find a file called `baseline-main.xml` in the `version/1.8.9` folder, rename the file to
+     `baseline.xml` replacing the old one. You also should copy the new contents of this file to the [main baseline file](detekt/baseline.xml)
 - Do not copy features from other mods. Exceptions:
     - Mods that are paid to use.
   - Mods that have reached their end of life. (Rip SBA, Dulkir and Soopy).
@@ -92,6 +152,37 @@ for more information and usages.
   the main thread.
 - When updating a config option variable, use the `ConfigUpdaterMigrator.ConfigFixEvent` with event.move() when moving a value, and event.transform() when updating a value. [For Example](https://github.com/hannibal002/SkyHanni/blob/e88f416c48f9659f89b7047d7629cd9a1d1535bc/src/main/java/at/hannibal2/skyhanni/features/gui/customscoreboard/CustomScoreboard.kt#L276).
 - Use American English spelling conventions (e.g., "color" not "colour").
+
+## Additional Useful Development Tools
+
+### DevAuth
+
+[DevAuth](https://github.com/DJtheRedstoner/DevAuth) is a tool that allows logging in to a Minecraft account while
+debugging in IntelliJ. This is very useful for coding live on Hypixel without the need to compile a jar.
+
+- The library is already downloaded by Gradle.
+- SkyHanni will automatically set up DevAuth.
+- Start Minecraft inside IntelliJ normally.
+    - Click on the link in the console and verify with a Microsoft account.
+    - The verification process will reappear every few days (after the session token expires).
+
+### Hot Swap
+
+Hot Swap allows reloading edited code while debugging, removing the need to restart the whole game every time.
+
+We use [dcevm](https://dcevm.github.io/) and the IntelliJ
+Plugin [HotSwap Agent](https://plugins.jetbrains.com/plugin/9552-hotswapagent) to quickly reload code changes.
+
+Follow [this](https://forums.Minecraftforge.net/topic/82228-1152-3110-intellij-and-gradlew-forge-hotswap-and-dcevm-tutorial/)
+tutorial.
+
+### [Live Plugin](https://plugins.jetbrains.com/plugin/7282-liveplugin)
+
+Allows project specific plugins to run. Eg: Regex Intention
+
+### [Live Templates Sharing](https://plugins.jetbrains.com/plugin/25007-live-templates-sharing)
+
+Imports our custom live templates automatically. Live Templates allow for quicker code writing.
 
 ## Software Used in SkyHanni
 
@@ -157,29 +248,6 @@ For info on usage, look at [DiscordRPCManager.kt](https://github.com/hannibal002
 ### Auto Updater
 
 We use the [auto update library](https://github.com/nea89o/libautoupdate) from nea89.
-
-## Additional Useful Development Tools
-
-### DevAuth
-
-[DevAuth](https://github.com/DJtheRedstoner/DevAuth) is a tool that allows logging in to a Minecraft account while
-debugging in IntelliJ. This is very useful for coding live on Hypixel without the need to compile a jar.
-
-- The library is already downloaded by Gradle.
-- SkyHanni will automatically set up DevAuth.
-- Start Minecraft inside IntelliJ normally.
-    - Click on the link in the console and verify with a Microsoft account.
-    - The verification process will reappear every few days (after the session token expires).
-
-### Hot Swap
-
-Hot Swap allows reloading edited code while debugging, removing the need to restart the whole game every time.
-
-We use [dcevm](https://dcevm.github.io/) and the IntelliJ
-Plugin [HotSwap Agent](https://plugins.jetbrains.com/plugin/9552-hotswapagent) to quickly reload code changes.
-
-Follow [this](https://forums.Minecraftforge.net/topic/82228-1152-3110-intellij-and-gradlew-forge-hotswap-and-dcevm-tutorial/)
-tutorial.
 
 ## 1.21 / Modern version development
 
