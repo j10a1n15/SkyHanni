@@ -1,6 +1,7 @@
 package at.hannibal2.skyhanni.features.gui.bar
 
 import at.hannibal2.skyhanni.SkyHanniMod
+import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.core.config.Position
 import at.hannibal2.skyhanni.config.features.gui.CustomHUDBarConfig
 import at.hannibal2.skyhanni.events.GuiRenderEvent
@@ -56,7 +57,7 @@ object CustomHUDBar {
         )
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onRender(event: GuiRenderEvent.GuiOverlayRenderEvent) {
         if (!isEnabled()) return
 
