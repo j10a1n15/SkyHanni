@@ -3,7 +3,7 @@ package at.hannibal2.skyhanni.features.misc.items
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.ReforgeAPI
 import at.hannibal2.skyhanni.data.jsonobjects.repo.ItemValueCalculationDataJson
-import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarApi.isBazaarItem
+import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarAPI.isBazaarItem
 import at.hannibal2.skyhanni.features.misc.discordrpc.DiscordRPCManager
 import at.hannibal2.skyhanni.features.nether.kuudra.KuudraAPI
 import at.hannibal2.skyhanni.features.nether.kuudra.KuudraAPI.getKuudraTier
@@ -15,6 +15,7 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.sorted
 import at.hannibal2.skyhanni.utils.CollectionUtils.sortedDesc
 import at.hannibal2.skyhanni.utils.EssenceUtils
 import at.hannibal2.skyhanni.utils.EssenceUtils.getEssencePrices
+import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.ItemPriceUtils.getNpcPriceOrNull
 import at.hannibal2.skyhanni.utils.ItemPriceUtils.getPriceOrNull
 import at.hannibal2.skyhanni.utils.ItemPriceUtils.getRawCraftCostOrNull
@@ -644,8 +645,22 @@ object EstimatedItemValueCalculator {
             // efficiency 1-5 is cheap, 6-10 is handled by silex
             if (rawName == "efficiency") continue
 
-            val isAlwaysActive = data.alwaysActiveEnchants.entries.any {
-                it.key == rawName && it.value.level == rawLevel && it.value.internalNames.contains(internalName)
+            val isAlwaysActive = try {
+                data.alwaysActiveEnchants.entries.any { (key, value) ->
+                    val level = value.level
+                    val internalNames = value.internalNames
+                    key == rawName && level == rawLevel && internalNames.contains(internalName)
+                }
+            } catch (e: NullPointerException) {
+                ErrorManager.logErrorWithData(
+                    e, "Estimated Item value failed to properly show ${internalName.itemName}",
+                    "openInventoryName" to InventoryUtils.openInventoryName(),
+                    "internalName" to internalName,
+                    "rawName" to rawName,
+                    "rawLevel" to rawLevel,
+                    "alwaysActiveEnchants" to data.alwaysActiveEnchants.entries,
+                )
+                false
             }
             if (isAlwaysActive) continue
             var level = rawLevel
