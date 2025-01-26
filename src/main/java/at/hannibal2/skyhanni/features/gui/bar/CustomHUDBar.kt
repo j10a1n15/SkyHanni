@@ -5,7 +5,7 @@ import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.core.config.Position
 import at.hannibal2.skyhanni.config.features.gui.CustomHUDBarConfig
 import at.hannibal2.skyhanni.events.GuiRenderEvent
-import at.hannibal2.skyhanni.events.LorenzTickEvent
+import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ColorUtils.toChromaColor
 import at.hannibal2.skyhanni.utils.LorenzUtils
@@ -14,7 +14,6 @@ import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderable
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 @SkyHanniModule
 object CustomHUDBar {
@@ -22,12 +21,9 @@ object CustomHUDBar {
     private val config get() = SkyHanniMod.feature.gui.bar
     private var display: Renderable? = null
 
-    @SubscribeEvent
-    fun onTick(event: LorenzTickEvent) {
-        if (!isEnabled()) {
-            display = null
-            return
-        }
+    @HandleEvent(onlyOnSkyblock = true)
+    fun onTick(event: SkyHanniTickEvent) {
+        if (!config.enabled) return
         val padding = 5
 
         val scaledWidth = ScaledResolution(Minecraft.getMinecraft()).scaledWidth
@@ -57,9 +53,9 @@ object CustomHUDBar {
         )
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnSkyblock = true)
     fun onRender(event: GuiRenderEvent.GuiOverlayRenderEvent) {
-        if (!isEnabled()) return
+        if (!config.enabled) return
 
         display?.let {
             val scaledHeight = ScaledResolution(Minecraft.getMinecraft()).scaledHeight
@@ -70,8 +66,6 @@ object CustomHUDBar {
             position.renderRenderable(it, "Bar", addToGuiManager = false)
         }
     }
-
-    private fun isEnabled() = LorenzUtils.inSkyBlock && config.enabled
 
     private fun splitEntries(): Pair<List<Renderable>, List<Renderable>> {
         val leftEntries = mutableListOf<Renderable>()
