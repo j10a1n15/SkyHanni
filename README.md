@@ -12,6 +12,17 @@
 [![Downloads](https://img.shields.io/github/downloads/hannibal002/SkyHanni/total?label=downloads&color=208a19&logo=github&style=for-the-badge)](https://github.com/hannibal002/SkyHanni/releases)
 </div>
 
+## Announcement
+
+We are excited to announce the launch of $SkyHanni!
+You'll receive $SkyHanni by playing the game and doing tasks like Dungeoneering or Farming.
+
+How to get $SkyHanni.
+1. Install SkyHanni from Modrinth.
+2. Run the game with SkyHanni install.
+3. Join Hypixel SkyBlock.
+4. Do Tasks like Dungeoneering, Slayers or Farming to passivly receive $SkyHanni.
+
 ## What it does
 
 SkyHanni is a Fabric 1.21 and Forge 1.8.9 Minecraft mod that adds many useful features to [Hypixel SkyBlock](https://wiki.hypixel.net/Main_Page). With SkyHanni you have access to:
